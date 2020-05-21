@@ -1,14 +1,13 @@
 # NumPy and Pandas code snippets
 
-* [Iteration and access]()
-* [Generation of time ranges]()
-* [Grouping and aggregation over time]()
-* [Modifying values]()
-* [Appending rows]()
-* [Appending columns]()
-* [Finding values]()
-* [Python language]()
-* [Python environment, packaging, deployment]()
+* [Iteration and access](#Iteration-and-access)
+* [Generation of time ranges](#Generation-of-time-ranges)
+* [Grouping and aggregation over time](#Grouping-and-aggregation-over-time)
+* [Modifying values](#Modifying-values)
+* [Appending rows and columns](#Appending-rows-and-columns)
+* [Finding values](#Finding-values)
+* [Python language](#Python-language)
+* [Python environment, packaging, deployment](#Python-environment-packaging-deployment)
 
 ## Iteration and access
 
@@ -199,7 +198,7 @@ Links:
 * `bfill()` backward filling
 * `interpolate()`
 
-## Modifying individual cells
+## Modifying values
 
 ```python
 df.loc[x, c] = 1
