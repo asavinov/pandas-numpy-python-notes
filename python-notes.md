@@ -1,3 +1,223 @@
+# Python notes
+
+* [Python language](#Python-language)
+* [Python environment, packaging, deployment](#Python-environment-packaging-deployment)
+* [Python packages and modules](#Python-packages-and-modules)
+* [Python packaging](#Python-packaging)
+* [Git manipulations](#Git-manipulations)
+* [Github pages](#Github pages)
+
+# ---
+# Python language
+
+## Comparison and None
+
+Comparison:
+
+* 'is' is identity testing (reference comparison) equivalent to id(a) == id(b)
+* '==' is equality testing (content comparison)
+
+Check for non null:
+
+```python
+if val is not None:
+if val: # Same as above
+if val is None:
+```
+
+The following is not recommended (because controversies if val is a complex object like pandas data frame):
+```python
+val != None
+```
+
+## Pass arguments
+
+Passing arguments: https://stackoverflow.com/questions/334655/passing-a-dictionary-to-a-function-in-python-as-keyword-parameters
+
+```python
+mydict = {'b': 100, 'c': 200}
+test(a=3, **mydict)
+```
+
+Important is that the dict cannot overwrite the explicit arguments, and the dict cannot contain unspecified (in the function) arguments.	
+	
+One generic approach is to merge all possible sources of arguments into one dict and then use only this one dict. Also, we need to remove unspecified fields from this dict, for example, if this dict originates from some configuration.
+
+How to merge two dicts: https://stackoverflow.com/questions/38987/how-to-merge-two-dictionaries-in-a-single-expression
+
+Python 2:
+
+```python
+z = x.copy()
+z.update(y) # which returns None since it mutates z
+```
+
+Python 3.5:
+
+```python
+z = {**x, **y}  # values from y will replace those from x
+```
+
+Delete entry from dict: https://stackoverflow.com/questions/5844672/delete-an-element-from-a-dictionary	
+
+```python
+d.pop("key")  # It mutates dict
+del d['key']  # Mutates dict
+```
+python
+Copy dictionary (shallow copy):
+
+```python
+r = dict(d)
+```
+
+## Internal structure of Python objects
+
+Find a function in a module:
+
+```python
+import foo
+method_to_call = getattr(foo, 'bar')
+result = method_to_call()
+```
+
+or shorter
+
+```python
+import foo
+result = getattr(foo, 'bar')()
+```
+
+Here you have to know already the module name. 'hasattr' can be used to determine if a function is defined. This version might be better:
+
+```python
+getattr(foo, 'bar', lambda: None)
+```
+
+Find a function by name:
+
+* 'locals()["myfunction"]()' - use a local symbol table https://docs.python.org/3/library/functions.html#locals
+* 'globals()["myfunction"]()' - use a global symbol table http://docs.python.org/library/functions.html#globals
+
+If it is necessary to also import a module:
+
+```python
+module = __import__('foo')  # Python 2
+module = importlib.import_module  # Python 3
+func = getattr(module, 'bar')
+func()
+```
+
+## Date and time
+
+Definitions:	
+
+* Unix time = POSIX time = UNIX Epoch time = number of seconds elapsed since 01.01.1970 00:00:00 UTC minus leap seconds.
+* UTC (Coordinated Universal Time) - no daylight saving time - normally same as GMT but GMT is not precisely defined.
+
+Links:
+
+* Date transformations: https://stackoverflow.com/questions/8777753/converting-datetime-date-to-utc-timestamp-in-python/8778548#8778548
+
+# ---
+# Python environment, packaging, deployment
+
+## User space
+
+User space is where all packages are stored for only this user. It is analogous to the global dir but only for this user.
+
+Install into user space: 
+
+```python
+pip install --user package-name
+```
+
+User-base binary directory is needed and must be in PATH. how to get user-base dir:
+
+* Linux: "python -m site --user-base" (typically ~/.local) - and then add /bin to the end
+* Windows: "python -m site --user-site" (typically AppData\Roaming\Python\Python36\site-packages) - and replace site-packages with Scripts
+
+## virtualenv
+	
+virtualenv is a tool to create isolated Python environments. virtualenv creates a folder which contains all the necessary executables to use the packages that a Python project would need.
+
+```
+pip install virtualenv - install the tool
+```
+
+Create a virtualenv for a project:
+
+```
+cd my_project_folder 
+virtualenv my_project
+```
+
+It will be in the current directory (where the project is) with Python executables and copy of pip (to install other packages). Exclude this folder from source control (or use standard name for all projects like 'env').
+
+Use any python interpreter of your choice (or we can use envvar VIRTUALENVWRAPPER_PYTHON as a global parameter):
+
+```
+virtualenv -p /usr/bin/python2.7 my_project - 
+```
+
+Activate the current virtualenv (otherwise it will not be used):
+
+```
+my_project/bin/activate
+```
+
+From now on, all packages installed using pip will be placed in this virtualenv folder (not global).
+
+Deactivate the current virtualenv (switch to system default):
+
+```
+deactivate
+```
+
+Delete the folder to delete the virtualenv
+
+Freeze the current state of packages etc. in a file:
+
+```
+pip freeze > requirements.txt
+```
+
+Recreate the environment:
+
+```
+pip install -r requirements.txt"
+```
+
+## pipenv
+
+Install pipenv in user space:
+```
+pip install --user pipenv 
+```
+Install globally:
+```
+pip install pipenv
+```
+
+Pipenv manages dependencies on a per-project basis. So we need to change into the project dir and do installation from it:
+
+```
+pipenv install some-package
+```
+
+It will install this package and update Pipfile (which tracks your dependencies).
+
+For each project it will create locally (for the user): a separate virtualenv (in \.virtualenvs folder) and a separate Pipfile (in project folder)
+
+```
+pipenv install # No package. it will use requirements.txt and install the packages.
+```
+
+Links:
+* https://docs.pipenv.org/
+* http://docs.python-guide.org/en/latest/dev/virtualenvs/
+
+
 # ---
 # Python packages and modules
 
