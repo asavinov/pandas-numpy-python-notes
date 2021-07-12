@@ -7,7 +7,6 @@
 * [Git manipulations](#Git-manipulations)
 * [Github pages](#Github pages)
 
-# ---
 # Python language
 
 ## Comparison and None
@@ -119,7 +118,6 @@ Links:
 
 * Date transformations: https://stackoverflow.com/questions/8777753/converting-datetime-date-to-utc-timestamp-in-python/8778548#8778548
 
-# ---
 # Python environment, packaging, deployment
 
 ## User space
@@ -218,7 +216,6 @@ Links:
 * http://docs.python-guide.org/en/latest/dev/virtualenvs/
 
 
-# ---
 # Python packages and modules
 
 Terms and principles:
@@ -271,7 +268,6 @@ Absolute vs. relative imports:
 * Q: How cwd (program start) influences imports
 * Q: How main program properties influence imports (like `__name__` and similar properties)?
 
-# ---
 # Python packaging
 
 ### Links
@@ -290,7 +286,6 @@ Both archives will be uploaded to pypi and visible/downloadable from the browser
 * `twine upload dist/*` Only files from the dist folder will be used. Login/password will be asked. The pypi user has to own the project (with the name defined in setup.py)
 * Check that the package has been uploaded here: https://pypi.org/search/
 
-# ---
 # Git manipulations
 
 ### Change authors of commits
@@ -400,7 +395,6 @@ We can delete remote branch which is not default, so change it in setting. Direc
 git push origin --delete master
 ```
 
-# ---
 # Github pages
 
 ### Types of github pages
