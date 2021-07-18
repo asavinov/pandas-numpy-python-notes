@@ -262,11 +262,21 @@ Absolute vs. relative imports:
 
 * Q: When to use `import abs` and where to use `from something import abc`
 * Q: How `sys.path` influences absolute and relative imports?
-* Q: HOw environment variables like `PYTHONPATH` influence absolute and relative imports?
-  * PyCharm has checkboxes: add content roots to `PYTHONPATH`, and add source roots to `PYTHONPATH`
-  * Maybe we could do it programmatically in our scripts (instead of or in addition to `sys.path` modification)?
+* Q: Where should we rely on ```__file__``?
+* Q: What is the role and usage of environment variables for relative and absolute imports: 
+  * `PYTHONPATH`: PyCharm has checkboxes: add content roots to `PYTHONPATH`, and add source roots to `PYTHONPATH`
+  * `PACKAGE_PARENT`
+  * `SCRIPT_DIR`
+* What is the role of  (particularly, for absolute and relative imports)?
 * Q: How cwd (program start) influences imports
 * Q: How main program properties influence imports (like `__name__` and similar properties)?
+
+How this script works:
+```python
+PACKAGE_PARENT = '..'
+SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
+sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
+```
 
 # Python packaging
 
