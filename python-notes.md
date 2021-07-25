@@ -270,6 +270,7 @@ Absolute vs. relative imports:
 * What is the role of  (particularly, for absolute and relative imports)?
 * Q: How cwd (program start) influences imports
 * Q: How main program properties influence imports (like `__name__` and similar properties)?
+* Q: How this work? In an internal package ``foo.__init__.py`` we can write ``__all__ = ['settings']`` and then the ``settings`` can be (relatively) imported from internal packages.
 
 How this script works:
 ```python
@@ -277,6 +278,11 @@ PACKAGE_PARENT = '..'
 SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.expanduser(__file__))))
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 ```
+
+Use cases that need to be supported:
+* Running code as a script located in some package or in the root.
+  * "Scripts within packages are not really supported in Python (despite it being frequently requested). Make a helper script at the top level that imports foo.bar.myfile and you'll be all set" Such a script should be located in the root and then import all the necessary modules.
+* Importing main functional modules from test scripts which are located either in a subfolder or in their separate folder.
 
 # Python packaging
 
