@@ -118,6 +118,10 @@ Links:
 
 * Date transformations: https://stackoverflow.com/questions/8777753/converting-datetime-date-to-utc-timestamp-in-python/8778548#8778548
 
+## Useful libraries
+
+* https://github.com/cdgriffith/Box Python dictionaries with advanced dot notation access
+
 # Python environment, packaging, deployment
 
 ## User space
@@ -130,7 +134,7 @@ Install into user space:
 pip install --user package-name
 ```
 
-User-base binary directory is needed and must be in PATH. how to get user-base dir:
+User-base binary directory is needed and must be in `PATH`. how to get user-base dir:
 
 * Linux: "python -m site --user-base" (typically ~/.local) - and then add /bin to the end
 * Windows: "python -m site --user-site" (typically AppData\Roaming\Python\Python36\site-packages) - and replace site-packages with Scripts
@@ -220,23 +224,11 @@ Links:
 
 Terms and principles:
 * Module is a file
-* Package is a folder with modules inside (for Python 2 it must have `__init___` in it)
-* It is possible to import both packages and modules. Importing a package means importing `__init___.py` as a module
+* Package is a folder with modules inside (for Python 2 it must have `__init__` in it)
+* It is possible to import both packages and modules. Importing a package means importing `__init__.py` as a module
 * `import abc` imports either package or module
 * `from abc import xyz` imports module, subpackage or class/function
-* `import abc as other_name` renames the imported resource. It must be then names using new name.
-
-Import should work without changes in the following cases:
-* Execute a local module from IDE (debugging), e.g., using its main function or from command line in the same directory: `module3.py`
-* Execute a local modeul from the project root by specify its location in the package structure like `module1/module2/module3.py`
-* Import of arbitrary module in the hierarchy from within another internal module in this hierarchy
-
-What is important:
-* The directory the program has been started
-* The project root
-* What is declared in `__init___.py`
-* How to import: import package/module [as name], from package/module import name or *
-* Relative package/module names: module1.module2.module3, ...module1.module2
+* `import abc as other_name` renames the imported resource. It must be then named using new name.
 
 How import works. When `import abc` is executed:
 * Python will look up the `abc` name in `sys.modules` which is a cache of all previously imported modules
@@ -246,6 +238,10 @@ How import works. When `import abc` is executed:
 * Otherwise, it throws `ModuleNotFoundError`
 * Once the module was imported, its path is here: `abc.__file__`
 
+Essentially, the import system is based on mapping module/package names to file/folder names of the file system. Such a mapping needs a starting point(s) in the file system as some folder. Which starting folder to use in order for search can be specified in the import statement by choosing one of two options:
+* Absolute imports. The resolution starts from path(s) defined in `PYTHONPATH`, `sys.path` and typically is project root or current working directory. This list of starting point can be changed programmatically.
+* Relative imports. The resolution starts from the path where the script resides, that is, the script where the import statement is executed. Accordingly, this starting point changes from module to module automatically.
+
 Absolute vs. relative imports:
 * An *absolute import* specifies the resource to be imported using its full path from the project’s root folder. This is somewhat similar to its file path, but we use a dot (.) instead of a slash (/).
   * Pros: import path does not depend on the location of this file and the import statement itself can be copied to other files
@@ -254,15 +250,15 @@ Absolute vs. relative imports:
   * Cons: paths can be quite long
     * Q: Can we solve this problem by using `as name` for long import paths?
   * Q: How project root is defined in code and in environmnet?
-* A relative import specifies the resource to be imported relative to the current location—that is, the location where the import statement is
+* A relative import specifies the resource to be imported relative to the current location, that is, the location where the import statement is
   * Implicit relative imports have been deprecated in Python 3, so I won’t be covering them here
   * They start from dot (in contrast to absolute imports)
   * Single dot means current location 
-  * `from . import class1` imports from the current package (effectively from `__init___`)
+  * `from . import class1` imports from the current package (effectively from `__init__`)
 
 * Q: When to use `import abs` and where to use `from something import abc`
 * Q: How `sys.path` influences absolute and relative imports?
-* Q: Where should we rely on ```__file__``?
+* Q: Where should we rely on `__file__`?
 * Q: What is the role and usage of environment variables for relative and absolute imports: 
   * `PYTHONPATH`: PyCharm has checkboxes: add content roots to `PYTHONPATH`, and add source roots to `PYTHONPATH`
   * `PACKAGE_PARENT`
@@ -270,7 +266,7 @@ Absolute vs. relative imports:
 * What is the role of  (particularly, for absolute and relative imports)?
 * Q: How cwd (program start) influences imports
 * Q: How main program properties influence imports (like `__name__` and similar properties)?
-* Q: How this work? In an internal package ``foo.__init__.py`` we can write ``__all__ = ['settings']`` and then the ``settings`` can be (relatively) imported from internal packages.
+* Q: How this work? In an internal package `foo.__init__.py` we can write `__all__ = ['settings']` and then the ``settings`` can be (relatively) imported from internal packages.
 
 How this script works:
 ```python
@@ -279,10 +275,39 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(os.path.join(os.getcwd(), os.path.
 sys.path.append(os.path.normpath(os.path.join(SCRIPT_DIR, PACKAGE_PARENT)))
 ```
 
-Use cases that need to be supported:
+What influences imports:
+* Context for search:
+  * Environment variables: `PYTHONPATH`, `PACKAGE_PARENT`, `SCRIPT_DIR`
+  * The directory the program has been started
+  * Python own context: `sys.path`
+  * Special fields like `__file__`, `__name__`, `__all__`, what is declared in `__init___.py`
+  * The project root, script start folder
+* Where to search:
+  * How to import: import package/module [as name], from package/module import name or *
+  * Relative package/module names: module1.module2.module3, ...module1.module2
+
+Use cases that need to be supported and criteria for a good design:
 * Running code as a script located in some package or in the root.
+  * Ideally, the scripts should run independent of the location there were started from: `python ./my_script.py` or `python my_project/my_script.py`
+  * The script should correctly import other modules with arbitrary locations and independent of its own start location
   * "Scripts within packages are not really supported in Python (despite it being frequently requested). Make a helper script at the top level that imports foo.bar.myfile and you'll be all set" Such a script should be located in the root and then import all the necessary modules.
 * Importing main functional modules from test scripts which are located either in a subfolder or in their separate folder.
+* Running tests from their own location (local) or from project root
+* If we define a new module, then it has to be designed in such a way that it can be imported: from tests or script (started from different locations), from other modules with arbitrary location
+* Import should work without changes in the following cases:
+  * Execute a local module from IDE (debugging), e.g., using its main function or from command line in the same directory: `module3.py`
+  * Execute a local modeul from the project root by specify its location in the package structure like `module1/module2/module3.py`
+  * Import of arbitrary module in the hierarchy from within another internal module in this hierarchy
+* Loading files independent of the script location, for example, in unit tests which can be executed either from project root or from their location.
+
+Some conclusions:
+* Python uses sys.paths for resolving modules. Depending on what is in this list, different results will be produced.
+* The main problem is to understand when and how sys.path is set by Python itself and how we can influence this:
+  * Environment variables set outside before execution
+  * Current working directory where the main program is started from
+  * `__init__` and other implicitly executed scripts
+  * IDE and toolkits (like pytest) might intervene by setting environment variables or sys.path
+
 
 # Python packaging
 
